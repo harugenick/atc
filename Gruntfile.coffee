@@ -151,8 +151,19 @@ module.exports = (grunt) ->
             create: true
             include: [
               'css'
-              'cs!views/layouts/workspace'
               'main'
+
+              # These are started up dynamically to get around cyclic dependencies
+              'cs!router'
+              'cs!views/layouts/workspace'
+              'cs!views/workspace/content/layouts/editor'
+              'cs!views/workspace/menu/toolbar-aloha'
+
+              # For some reason JSON files are not baked in
+              'json!models/languages/countries.json'
+              'json!models/languages/languages.json'
+              'json!models/languages/variants.json'
+
             ]
             excludeShallow: [
               'css/css-builder'

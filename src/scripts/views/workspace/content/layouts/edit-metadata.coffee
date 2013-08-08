@@ -6,10 +6,10 @@ define [
   'cs!views/workspace/content/edit-summary'
   'hbs!templates/workspace/content/layouts/edit-metadata'
   'hbs!templates/workspace/content/language-variants'
-  'i18n!nls/strings'
+  # 'i18n!nls/strings' Because Aloha is loaded in the global context (`_`) `nls` has some different meaning. See TODO below
   'select2'
   'bootstrapCollapse'
-], ($, Marionette, config, languagesModel, SummaryView, metadataTemplate, languagesTemplate, __) ->
+], ($, Marionette, config, languagesModel, SummaryView, metadataTemplate, languagesTemplate) ->
 
   # Given the language list in [languages.coffee](languages.html)
   # this reorganizes them so they can be shown in a dropdown.
@@ -41,7 +41,7 @@ define [
         $languages.append($lang)
 
       $languages.select2
-        placeholder: __('Select a language')
+        placeholder: 'Select a language' # TODO: put `__()` back when Aloha is loaded in the `aloha` context
 
       # Select the correct language (Handlebars can't do that)
       @_updateLanguage()
