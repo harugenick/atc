@@ -1,9 +1,41 @@
 define [
   'jquery'
   'underscore'
+  'marionette'
   'aloha'
+  'cs!collections/content' # Only needed for the Modal
+  'cs!collections/media-types' # Only needed for the Modal
+  'cs!views/all-modals' # Only needed for the Modal
   'hbs!templates/workspace/dnd-handle'
-], ($, _, Aloha, dndHandleTemplate) ->
+  'hbs!templates/workspace/dnd-copy-link-move' # Only needed for the Modal
+], ($, _, Marionette, Aloha, allContent, mediaTypes, allModals, dndHandleTemplate, copyLinkMoveTemplate) ->
+
+  class ModalView extends Marionette.ItemView
+    onRender: () ->
+      $model = @$el.children()
+      throw new Error 'BUG! More than one modal in a template!' if $model.length != 1
+      $model.modal('show')
+      $model.on 'hide', () => @onHidden()
+
+    onClose: () -> @$el.children().modal('hide')
+
+    onHidden: () -> # Do nothing by default
+
+  class CopyLinkMoveModal extends ModalView
+    template: copyLinkMoveTemplate
+    events:
+      'click .ok': 'onOk'
+
+    onOk: () ->
+      # Disable the 'ok' button so it cannot be clicked multiple times
+      @$el.find('.ok').addClass('disabled')
+
+      operation = @$el.find('[name="operation"]:checked').val()
+      @doStuff(operation)
+
+    doStuff: (operation) ->
+      throw new Error('BUG: This should be set during construction')
+
 
   # Drag and Drop Behavior
   # -------
@@ -80,9 +112,37 @@ define [
             drag = $drag.data 'editor-model'
             drop = $drop.data 'editor-model'
 
+
+            # Extend the class so `onDrop` can be squirreled inside
+            class SpecificCopyLinkMoveModal extends CopyLinkMoveModal
+              # doStuff takes an operation argument:
+              # - `link` (default): keep a reference in both places
+              # - `copy` : Make a copy of the Model and refer to the copied model
+              # - `move` : Put a reference in the drop location and remove the previous reference (if there was one)
+              doStuff: (operation) ->
+                switch operation
+                  when 'link'
+                    onDrop(drag, drop)
+                    @close()
+                  when 'copy'
+                    drag.load()
+                    .fail(()=> alert 'There was a problem loading the file so we could make a copy of it')
+                    .done () =>
+                      json = drag.toJSON()
+                      json.mediaType ?= drag.mediaType # Set the mediaType just in case `.toJSON()` does not
+                      json.title = "Copy of #{json.title}"
+                      delete json.id
+                      clone = allContent.model(json)
+                      allContent.add(clone)
+
+                      onDrop(clone, drop)
+                      @close() # Wait until successfully loaded and dropped before closing
+
+            # Add the dropModal
             # Delay the call so $.droppable has time to clean up before the DOM changes
-            delay = => onDrop(drag, drop)
-            setTimeout(delay, 10)
+            dropModal = new SpecificCopyLinkMoveModal {model:drag}
+            # 'copy-link-move' is the "slot"
+            allModals.add('copy-link-move', dropModal)
 
   return {
     enableContentDnD: (model, $content) ->
