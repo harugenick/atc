@@ -7,8 +7,9 @@
 define [
   'marionette'
   'cs!collections/content'
+  'cs!views/all-modals'
   'cs!views/layouts/workspace'
-  ], (Marionette, allContent, WorkspaceLayout) ->
+  ], (Marionette, allContent, allModals, WorkspaceLayout) ->
 
 
   # Only reason to extend Backbone.Router is to get the @navigate method
@@ -27,6 +28,9 @@ define [
       # Make sure the menu is loaded
       # TODO: This can be removed if the "Home" button (and click event) are moved into this layout
       @layout.menu.show(menuLayout) if not @layout.menu.currentView
+
+      # Make sure the modals dialogs are all filled in from the singleton
+      @layout.modals.show(allModals.getView())
 
     # There is a cyclic dependency between the controller and the ToC tree because
     # the user can click an item in the ToC to `goEdit`.

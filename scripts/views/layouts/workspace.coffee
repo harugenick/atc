@@ -32,6 +32,8 @@ define [
       menu: '#menu'
       sidebar: '#sidebar'
       workspace: '#workspace'
+      # All the Modals end up in here
+      modals: '#modals'
 
     events:
       'click #workspace-container > .close': 'minimizeWorkspace'
