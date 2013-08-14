@@ -36,6 +36,7 @@ define ['jquery'], ($) ->
       map:
         '*':
           'semanticblock/semanticblock-plugin': 'semanticblock/lib/semanticblock-plugin'
+          'ui/ui': 'toolbar/toolbar-plugin'
 
     plugins:
       # All the plugins we use in Aloha
