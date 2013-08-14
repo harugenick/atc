@@ -63,6 +63,13 @@ define ['backbone'], (Backbone) ->
     getChildren: () ->
       @_tree_children or throw new Error('BUG! This node has no children. Call _initializeTreeHandlers ?')
 
+    getRoot: () ->
+      root = null
+      parent = @
+      while parent = parent.getParent()
+        root = parent
+      return root
+
     removeChild: (model) ->
       children = @getChildren()
       if not children.contains(model) or children.get(model.id)
